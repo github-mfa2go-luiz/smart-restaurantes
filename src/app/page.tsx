@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { restaurantsData, Restaurant } from '@/data/restaurants'
+import { useState, useMemo, useEffect } from 'react'
+import { restaurantsData } from '@/data/restaurants'
 import { MapPin, Utensils, Calendar, Star, ExternalLink, Filter, ChefHat, Search, Sun, Moon, Heart, X } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 export default function Home() {
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   // Filtros
@@ -17,21 +17,21 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('')
 
   // Favoritos
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('restaurant-favorites')
-      return saved ? JSON.parse(saved) : []
-    }
-    return []
-  })
+  const [favorites, setFavorites] = useState<string[]>([])
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
 
-  // Montar cliente
-  useState(() => {
+  // Carregar favoritos do localStorage no cliente
+  useEffect(() => {
     setMounted(true)
     const saved = localStorage.getItem('restaurant-favorites')
-    if (saved) setFavorites(JSON.parse(saved))
-  })
+    if (saved) {
+      try {
+        setFavorites(JSON.parse(saved))
+      } catch {
+        setFavorites([])
+      }
+    }
+  }, [])
 
   // Opções únicas para filtros
   const foodTypes = ['Todos', ...new Set(restaurantsData.map(r => r.foodType).filter(Boolean))]
