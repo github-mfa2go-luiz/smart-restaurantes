@@ -2,12 +2,29 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { restaurantsData } from '@/data/restaurants'
-import { MapPin, Utensils, Calendar, Star, ExternalLink, Filter, ChefHat, Search, Sun, Moon, Heart, X } from 'lucide-react'
+import {
+  MapPin,
+  Utensils,
+  Calendar,
+  Star,
+  ExternalLink,
+  SlidersHorizontal,
+  ChefHat,
+  Search,
+  Sun,
+  Moon,
+  Heart,
+  X,
+  Sparkles,
+  Clock,
+  Users
+} from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 export default function Home() {
   const { setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Filtros
   const [selectedFoodType, setSelectedFoodType] = useState('Todos')
@@ -31,9 +48,11 @@ export default function Home() {
         setFavorites([])
       }
     }
+    // Simular loading
+    setTimeout(() => setIsLoading(false), 500)
   }, [])
 
-  // Opções únicas para filtros
+  // Opcoes unicas para filtros
   const foodTypes = ['Todos', ...new Set(restaurantsData.map(r => r.foodType).filter(Boolean))]
   const neighborhoods = ['Todos', ...new Set(restaurantsData.map(r => r.neighborhood).filter(Boolean))]
   const types = ['Todos', ...new Set(restaurantsData.map(r => r.type).filter(Boolean))]
@@ -53,7 +72,7 @@ export default function Home() {
     })
   }, [selectedFoodType, selectedNeighborhood, selectedType, selectedCity, searchTerm, showFavoritesOnly, favorites])
 
-  // Estatísticas
+  // Estatisticas
   const stats = {
     total: restaurantsData.length,
     visited: restaurantsData.filter(r => r.status === 'FOMOS').length,
@@ -83,90 +102,148 @@ export default function Home() {
   const hasActiveFilters = selectedFoodType !== 'Todos' || selectedNeighborhood !== 'Todos' ||
     selectedType !== 'Todos' || selectedCity !== 'Todos' || searchTerm !== '' || showFavoritesOnly
 
+  // Skeleton Card Component
+  const SkeletonCard = () => (
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
+      <div className="p-5">
+        <div className="flex justify-between mb-3">
+          <div className="h-6 w-3/4 bg-zinc-200 dark:bg-zinc-700 rounded-lg animate-pulse" />
+          <div className="h-8 w-8 bg-zinc-200 dark:bg-zinc-700 rounded-full animate-pulse" />
+        </div>
+        <div className="flex gap-2 mb-3">
+          <div className="h-6 w-20 bg-zinc-200 dark:bg-zinc-700 rounded-full animate-pulse" />
+          <div className="h-6 w-24 bg-zinc-200 dark:bg-zinc-700 rounded-full animate-pulse" />
+        </div>
+        <div className="h-4 w-1/2 bg-zinc-200 dark:bg-zinc-700 rounded animate-pulse mb-4" />
+        <div className="h-10 w-full bg-zinc-200 dark:bg-zinc-700 rounded-xl animate-pulse mt-4" />
+      </div>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg">
-                <ChefHat className="w-8 h-8" />
+              <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg shadow-amber-500/20">
+                <ChefHat className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold">Guia de Restaurantes Brasil</h1>
-                <p className="text-orange-100 text-sm">Seus restaurantes favoritos em um só lugar</p>
+                <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                  Smart Restaurantes
+                </h1>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:block">
+                  Curadoria de restaurantes premium
+                </p>
               </div>
             </div>
             <button
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+              className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors duration-200"
               aria-label="Alternar tema"
             >
-              {mounted && (resolvedTheme === 'dark' ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />)}
+              {mounted && (resolvedTheme === 'dark'
+                ? <Sun className="w-5 h-5 text-amber-500" />
+                : <Moon className="w-5 h-5 text-zinc-600" />
+              )}
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-l-4 border-orange-500">
-            <div className="text-3xl font-bold text-orange-600 dark:text-orange-500">{stats.total}</div>
-            <div className="text-gray-600 dark:text-gray-400 text-sm">Total Restaurantes</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 hover:shadow-lg hover:shadow-zinc-200/50 dark:hover:shadow-zinc-900/50 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <Utensils className="w-4 h-4 text-amber-600 dark:text-amber-500" />
+              </div>
+              <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Total</span>
+            </div>
+            <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">{stats.total}</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-l-4 border-green-500">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-500">{stats.visited}</div>
-            <div className="text-gray-600 dark:text-gray-400 text-sm">Já Visitados</div>
+
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 hover:shadow-lg hover:shadow-zinc-200/50 dark:hover:shadow-zinc-900/50 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
+              </div>
+              <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Visitados</span>
+            </div>
+            <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">{stats.visited}</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-500">{stats.pending}</div>
-            <div className="text-gray-600 dark:text-gray-400 text-sm">Para Visitar</div>
+
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 hover:shadow-lg hover:shadow-zinc-200/50 dark:hover:shadow-zinc-900/50 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-sky-100 dark:bg-sky-900/30 rounded-lg">
+                <Clock className="w-4 h-4 text-sky-600 dark:text-sky-500" />
+              </div>
+              <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Pendentes</span>
+            </div>
+            <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">{stats.pending}</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-l-4 border-purple-500">
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-500">{stats.withReservation}</div>
-            <div className="text-gray-600 dark:text-gray-400 text-sm">Aceitam Reserva</div>
+
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 hover:shadow-lg hover:shadow-zinc-200/50 dark:hover:shadow-zinc-900/50 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
+                <Users className="w-4 h-4 text-violet-600 dark:text-violet-500" />
+              </div>
+              <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Reservas</span>
+            </div>
+            <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">{stats.withReservation}</div>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-6">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-2 mb-6">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar restaurante..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              className="w-full pl-12 pr-4 py-3 bg-transparent text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <X className="w-4 h-4 text-zinc-400" />
+              </button>
+            )}
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
             <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-orange-500" />
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Filtros</h2>
+              <SlidersHorizontal className="w-5 h-5 text-zinc-500" />
+              <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Filtros</h2>
             </div>
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                   showFavoritesOnly
-                    ? 'bg-red-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/25'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                 }`}
               >
                 <Heart className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-                Favoritos ({favorites.length})
+                <span className="hidden sm:inline">Favoritos</span>
+                <span className="bg-white/20 px-1.5 py-0.5 rounded-md text-xs">{favorites.length}</span>
               </button>
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-medium"
                 >
                   <X className="w-4 h-4" />
                   Limpar
@@ -174,11 +251,14 @@ export default function Home() {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cidade</label>
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                Cidade
+              </label>
               <select
-                className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 text-zinc-900 dark:text-zinc-100 text-sm transition-all"
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
               >
@@ -188,9 +268,11 @@ export default function Home() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de Comida</label>
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                Culinaria
+              </label>
               <select
-                className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 text-zinc-900 dark:text-zinc-100 text-sm transition-all"
                 value={selectedFoodType}
                 onChange={(e) => setSelectedFoodType(e.target.value)}
               >
@@ -200,9 +282,11 @@ export default function Home() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bairro</label>
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                Bairro
+              </label>
               <select
-                className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 text-zinc-900 dark:text-zinc-100 text-sm transition-all"
                 value={selectedNeighborhood}
                 onChange={(e) => setSelectedNeighborhood(e.target.value)}
               >
@@ -212,9 +296,11 @@ export default function Home() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estilo</label>
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                Categoria
+              </label>
               <select
-                className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 text-zinc-900 dark:text-zinc-100 text-sm transition-all"
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
               >
@@ -227,123 +313,144 @@ export default function Home() {
         </div>
 
         {/* Results Count */}
-        <div className="mb-4">
-          <p className="text-gray-600 dark:text-gray-400">
-            Mostrando <span className="font-bold text-orange-600 dark:text-orange-500">{filteredRestaurants.length}</span> restaurante(s)
-            {hasActiveFilters && <span className="ml-2 text-sm">(de {restaurantsData.length} no total)</span>}
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Mostrando <span className="font-semibold text-zinc-900 dark:text-zinc-50">{filteredRestaurants.length}</span> restaurante{filteredRestaurants.length !== 1 ? 's' : ''}
+            {hasActiveFilters && <span className="ml-1 text-zinc-400">(de {restaurantsData.length})</span>}
           </p>
         </div>
 
         {/* Restaurant Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRestaurants.map((restaurant, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-orange-500/50">
-              {/* Header Color Bar */}
-              <div className={`h-2 ${
-                restaurant.type === 'SOFISTICADO'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500'
-                  : restaurant.type === 'FITNESS'
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500'
-                    : 'bg-gradient-to-r from-orange-500 to-red-500'
-              }`}></div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredRestaurants.map((restaurant, index) => (
+              <div
+                key={index}
+                className="group bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:shadow-xl hover:shadow-zinc-200/50 dark:hover:shadow-zinc-900/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                {/* Header Color Bar */}
+                <div className={`h-1.5 ${
+                  restaurant.type === 'SOFISTICADO'
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-600'
+                    : restaurant.type === 'FITNESS'
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600'
+                      : 'bg-gradient-to-r from-amber-500 to-orange-600'
+                }`} />
 
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 flex-1">{restaurant.name}</h3>
-                  <button
-                    onClick={() => toggleFavorite(restaurant.name)}
-                    className="ml-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    aria-label={favorites.includes(restaurant.name) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                  >
-                    <Heart
-                      className={`w-5 h-5 ${
-                        favorites.includes(restaurant.name)
-                          ? 'text-red-500 fill-current'
-                          : 'text-gray-400'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Food Type Badge */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400">
-                    <Utensils className="w-3 h-3 mr-1" />
-                    {restaurant.foodType}
-                  </span>
-                  {restaurant.type && (
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                      restaurant.type === 'SOFISTICADO' ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400' :
-                      restaurant.type === 'FITNESS' ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400' :
-                      'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'
-                    }`}>
-                      {restaurant.type}
-                    </span>
-                  )}
-                </div>
-
-                {/* Location */}
-                <div className="flex items-start gap-2 text-gray-600 dark:text-gray-400 mb-3">
-                  <MapPin className="w-4 h-4 mt-1 flex-shrink-0 text-red-500" />
-                  <div className="text-sm">
-                    <div className="font-medium text-gray-700 dark:text-gray-300">{restaurant.neighborhood}</div>
-                    <div className="text-xs text-gray-500">{restaurant.city}</div>
-                  </div>
-                </div>
-
-                {/* Occasion */}
-                {restaurant.occasion && (
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4">
-                    <Calendar className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm">{restaurant.occasion}</span>
-                  </div>
-                )}
-
-                {/* Badges */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {restaurant.reservation === 'SIM' && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400">
-                      <Star className="w-3 h-3 mr-1" />
-                      Aceita Reserva
-                    </span>
-                  )}
-                  {restaurant.priority === 'HIGH' && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400">
-                      Alta Prioridade
-                    </span>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  {restaurant.menu && restaurant.menu !== 'Indisponivel' && restaurant.menu !== '' && (
-                    <a
-                      href={restaurant.menu}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-all text-sm font-medium"
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 line-clamp-2 flex-1 pr-2">
+                      {restaurant.name}
+                    </h3>
+                    <button
+                      onClick={() => toggleFavorite(restaurant.name)}
+                      className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      aria-label={favorites.includes(restaurant.name) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                     >
-                      Ver Cardápio
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                      <Heart
+                        className={`w-5 h-5 transition-colors ${
+                          favorites.includes(restaurant.name)
+                            ? 'text-rose-500 fill-current'
+                            : 'text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/50">
+                      <Utensils className="w-3 h-3 mr-1.5" />
+                      {restaurant.foodType}
+                    </span>
+                    {restaurant.type && (
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                        restaurant.type === 'SOFISTICADO'
+                          ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border-violet-200/50 dark:border-violet-800/50'
+                          : restaurant.type === 'FITNESS'
+                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/50'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
+                      }`}>
+                        {restaurant.type}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Location */}
+                  <div className="flex items-start gap-2.5 text-zinc-500 dark:text-zinc-400 mb-3">
+                    <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-zinc-400" />
+                    <div className="text-sm">
+                      <span className="text-zinc-700 dark:text-zinc-300">{restaurant.neighborhood}</span>
+                      <span className="mx-1.5 text-zinc-300 dark:text-zinc-600">·</span>
+                      <span className="text-zinc-500">{restaurant.city}</span>
+                    </div>
+                  </div>
+
+                  {/* Occasion */}
+                  {restaurant.occasion && (
+                    <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 mb-4">
+                      <Calendar className="w-4 h-4 text-zinc-400" />
+                      <span className="text-sm">{restaurant.occasion}</span>
+                    </div>
                   )}
+
+                  {/* Extra Badges */}
+                  {restaurant.reservation === 'SIM' && (
+                    <div className="mb-4">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50">
+                        <Star className="w-3 h-3 mr-1.5" />
+                        Aceita Reserva
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    {restaurant.menu && restaurant.menu !== 'Indisponivel' && restaurant.menu !== '' ? (
+                      <a
+                        href={restaurant.menu}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm font-medium"
+                      >
+                        Ver Cardapio
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 rounded-xl text-sm">
+                        Cardapio indisponivel
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {/* No Results */}
-        {filteredRestaurants.length === 0 && (
-          <div className="text-center py-12">
-            <Utensils className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">Nenhum restaurante encontrado</h3>
-            <p className="text-gray-500 mb-4">Tente ajustar os filtros ou a busca</p>
+        {/* Empty State */}
+        {!isLoading && filteredRestaurants.length === 0 && (
+          <div className="text-center py-16 animate-fade-in">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
+              <Search className="w-8 h-8 text-zinc-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
+              Nenhum restaurante encontrado
+            </h3>
+            <p className="text-zinc-500 dark:text-zinc-400 mb-6 max-w-md mx-auto">
+              Tente ajustar os filtros ou buscar por outro termo para encontrar o que procura.
+            </p>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm font-medium"
               >
+                <X className="w-4 h-4" />
                 Limpar filtros
               </button>
             )}
@@ -352,15 +459,19 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white py-6 mt-12 border-t border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <ChefHat className="w-5 h-5 text-orange-500" />
-            <span className="font-semibold">Smart Restaurantes</span>
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
+                <ChefHat className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Smart Restaurantes</span>
+            </div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {stats.total} restaurantes curados · 2026
+            </p>
           </div>
-          <p className="text-gray-500 text-sm">
-            Total: {stats.total} restaurantes | Janeiro 2026
-          </p>
         </div>
       </footer>
     </div>
